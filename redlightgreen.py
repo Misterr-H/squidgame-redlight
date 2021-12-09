@@ -23,6 +23,19 @@ while True:
 	inFrame = 0
 	inFramecheck = False
 	thresh = 180
+	ctimer = time.time()
+	legFlag = True
+
+
+	# def countdown():
+	#     t=3
+	#     while t:
+	#         mins, secs = divmod(t, 60)
+	#         timer = '{:02d}:{:02d}'.format(mins, secs)
+	#         print(timer, end="\r")
+	#         cv2.putText(mainWin, timer, (100,400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 4)
+	#         time.sleep(1)
+	#         t -= 1
 
 	def calc_sum(landmarkList):
 		
@@ -67,8 +80,12 @@ while True:
 			except:
 				print("You are not visible at all")
 
+		timer = int(120 - (time.time() - ctimer))
+
 		if inFrame == 1:
+
 			if not(isInit):
+				
 				playsound('greenLight.mp3')
 				currWindow = im1
 				startT = time.time()
@@ -80,6 +97,11 @@ while True:
 				try:
 					m = calc_dist(res.pose_landmarks.landmark)
 					if m < thresh:
+						legFlag = False
+					if m > thresh and legFlag:
+						legFlag = False
+						cPos += 1
+						cPos += 1
 						cPos += 1
 
 					print("current progress is : ", cPos)
@@ -119,6 +141,8 @@ while True:
 			cv2.circle(currWindow, ((55 + 6*cPos),280), 15, (0,0,255), -1)
 
 			mainWin = np.concatenate((cv2.resize(frm, (800,400)), currWindow), axis=0)
+			
+			cv2.putText(mainWin, str(timer), (100,400), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 4)
 			cv2.namedWindow("Main Window", cv2.WINDOW_FREERATIO)
 			cv2.setWindowProperty("Main Window", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 			cv2.imshow("Main Window", mainWin)
@@ -136,7 +160,7 @@ while True:
 			flg = True
 			break
 
-		if cv2.waitKey(1) == 27 or isAlive == 0 or winner == 1:
+		if cv2.waitKey(1) == 27 or isAlive == 0 or winner == 1 or timer<=0:
 			cv2.destroyAllWindows()
 			cap.release()
 			break
@@ -147,7 +171,7 @@ while True:
 
 	frm = cv2.blur(frm, (5,5))
 
-	if isAlive == 0:
+	if isAlive == 0 or timer == 0:
 		cv2.putText(frm, "Player Eliminated", (50,200), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,0,255), 4)
 		cv2.namedWindow("Main Window", cv2.WINDOW_FREERATIO)
 		cv2.setWindowProperty("Main Window", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
@@ -158,7 +182,7 @@ while True:
 
 
 	if winner == 1:
-		cv2.putText(frm, "You are Winner", (30,200), cv2.FONT_HERSHEY_SIMPLEX, 2, (0,255,0), 4)
+		cv2.putText(frm, "You are Winner", (40,200), cv2.FONT_HERSHEY_SIMPLEX, 2, (150,255,0), 4)
 		cv2.namedWindow("Main Window", cv2.WINDOW_FREERATIO)
 		cv2.setWindowProperty("Main Window", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 		cv2.imshow("Main Window", frm)
